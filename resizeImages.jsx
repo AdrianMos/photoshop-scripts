@@ -1,4 +1,28 @@
-﻿
+﻿/*
+Javascript for resizing batch of images using Adobe Photoshop.
+
+How to use:
+  Copy all input filesArray in /inputs.
+  Open Adobe Photoshop -> File -> Scripts -> Browse -> select resizeImages.jsx
+  All images found in /inputs (including subfoldersArray) are processed and copied to /outputs.
+  Warning: different file types are accepted but all images are saved as jpegs !
+
+Copyright (C) 2014, Adrian Raul Mos
+
+This program is free software : you can redistribute it and / or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.If not, see <http://www.gnu.org/licenses/>.*/
+
+
 resizeImages();
 
 function resizeImages() {
@@ -15,30 +39,37 @@ function resizeImages() {
         return;
     }
   
-    var folders = [];
-    folders = getAllSubfolders(inFolder, folders);
-    folders.unshift(inFolder); // add current folder to array
+    var foldersArray = [];
+    foldersArray = getSubfolders(inFolder, foldersArray);
+    foldersArray.unshift(inFolder); // add top folder to array
     
-    if (folders.length == 0) {
+    if (foldersArray.length == 0) {
         alert("no items found in input folder!")
         return;
     } 
    
-    for(var f in folders) {
-       var files = folders[f].getFiles(/.+\.(?:jpg|jpe?g|[ew]mf|eps|tiff?|bmp|png)$/i);
-       for(var j in files) {
-           open(files[j]);
+    for(var i in foldersArray) {
+       var filesArray = foldersArray[i].getFiles(/.+\.(?:jpg|jpe?g|[ew]mf|eps|tiff?|bmp|png)$/i);
+       for(var j in filesArray) {
+           open(filesArray[j]);
            doc = app.activeDocument; 
            doc.changeMode(ChangeMode.RGB); 
    
+           // Update the resizing rule here //
            if ((doc.width > doc.height) && (doc.width > UnitValue(800,"px")))
                doc.resizeImage(UnitValue(800,"px"), null, null, ResampleMethod.BICUBIC);
            else if ((doc.width < doc.height) && (doc.height > UnitValue(800,"px")))
                doc.resizeImage(null, UnitValue(600,"px"), null, ResampleMethod.BICUBIC);
-              
-           var resizedFile = new File(outFolder + "/" + trimFileName(files[j].name) + ' mod ' + getExtension(files[j].name));
-
-           saveForWeb(resizedFile, 60);
+           
+           // Update the output file naming rule here //
+           var outFilename = outFolder + "/" + trimFileName(filesArray[j].name) 
+                             + ' mod ' + '.jpeg';
+                        
+           // Update the image quality here //
+           var imageQuality = 60;
+           
+           var resizedFile = new File(outFilename);
+           saveForWeb(resizedFile, imageQuality);
            app.activeDocument.close(SaveOptions.DONOTSAVECHANGES);
        }
     }
@@ -47,6 +78,10 @@ function resizeImages() {
 function getExtension(filename) {
     return filename.substring(filename.lastIndexOf("."), filename.length)
 }
+
+function trimFileName(filename) { 
+	   return filename.substring(0, filename.lastIndexOf(".")); 
+};
   
 function scriptPath() {
     var currentScript = new File($.fileName);  
@@ -57,28 +92,24 @@ function isFolder(item) {
     return !(item instanceof File)
 }
 
-function getAllSubfolders(path, outArray) {
+function getSubfolders(path, outArray) {
     var items = Folder(path).getFiles();
     
     for (var i = 0; i<items.length; i++) {
         if (isFolder(items[i])) {         
             outArray.push(Folder(items[i]));
-            getAllSubfolders(items[i].toString(), outArray);
+            getSubfolders(items[i].toString(), outArray);
         }
    }
    return outArray;
 }
 
-function trimFileName(filename) { 
-	   return filename.substring(0, filename.lastIndexOf(".")); 
-};
-
-function saveForWeb(resizedFile,jpegQuality) {
-    var sfwOptions = new ExportOptionsSaveForWeb(); 
-    sfwOptions.format = SaveDocumentType.JPEG; 
-    sfwOptions.includeProfile = false; 
-    sfwOptions.interlaced = 0; 
-    sfwOptions.optimized = true; 
-    sfwOptions.quality = jpegQuality; //0-100 
-    activeDocument.exportDocument(resizedFile, ExportType.SAVEFORWEB, sfwOptions);
+function saveForWeb(resizedFile,imageQuality) {
+    var options = new ExportOptionsSaveForWeb(); 
+    options.format = SaveDocumentType.JPEG; 
+    options.quality = imageQuality; //0-100 
+    options.includeProfile = false; 
+    options.interlaced = 0; 
+    options.optimized = true; 
+    activeDocument.exportDocument(resizedFile, ExportType.SAVEFORWEB, options);
 }
