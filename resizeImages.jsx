@@ -42,12 +42,7 @@ function resizeImages() {
     var foldersArray = [];
     foldersArray = getSubfolders(inFolder, foldersArray);
     foldersArray.unshift(inFolder); // add top folder to array
-    
-    if (foldersArray.length == 0) {
-        alert("no items found in input folder!")
-        return;
-    } 
-   
+        
     for(var i in foldersArray) {
        var filesArray = foldersArray[i].getFiles(/.+\.(?:jpg|jpe?g|[ew]mf|eps|tiff?|bmp|png)$/i);
        for(var j in filesArray) {
