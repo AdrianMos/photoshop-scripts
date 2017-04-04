@@ -2,7 +2,7 @@
 Javascript for resizing batch of images using Adobe Photoshop.
 
 How to use:
-  Copy all input filesArray in /inputs.
+  Copy all input files in /inputs.
   Open Adobe Photoshop -> File -> Scripts -> Browse -> select resizeImages.jsx
   All images found in /inputs (including subfoldersArray) are processed and copied to /outputs.
   Warning: different file types are accepted but all images are saved as jpegs !
